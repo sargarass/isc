@@ -1,0 +1,6 @@
+#!/bin/bash
+DIR="$(dirname "$(readlink -f "$0")")"
+cd "$DIR"
+
+docker build --tag isc-musl-cross .
+docker run -v "$DIR:/mnt" -it --rm isc-musl-cross /mnt/compile_for_each_arch

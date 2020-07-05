@@ -1,0 +1,33 @@
+#!/bin/bash -e
+DIR="$(dirname "$(readlink -f "$0")")"
+
+source config_for_scripts
+
+declare -A compiler_targets
+
+compiler_targets["x86_64-linux-musl"]="-m32 -m64 -mx32"
+compiler_targets["mips64-linux-musl"]="-mel -meb -mabi=n32 -mabi=064 -mabi=32 -mabi=64"
+
+function compile() {
+    local dir=$(pwd)
+    echo $1-build
+    rm -rf $1-build
+    mkdir $1-build
+    cd $1-build
+    PATH="/usr/local/${compiler}-cross/bin:$PATH" CFLAGS=$4 CXXFLAGS=$4 cmake -DBUILD_ISC_EXAMPLES=ON .. 
+    make -j$(nproc)
+    cd "$dir"
+}
+
+cd "$DIR"
+for compiler in "${compilers[@]}"
+do
+    if [ ! -z "${compiler_targets[$compiler]}" ]; then
+        for target in ${compiler_targets[$compiler]}
+        do
+            compile "${compiler}_${target:1}" ${compiler} ${target}
+        done
+    else
+        compile ${compiler} /usr/local/${compiler}-cross/bin/cc /usr/local/${compiler}-cross/bin/c++ ""
+    fi
+done

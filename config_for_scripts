@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+URL="https://more.musl.cc/10/x86_64-linux-musl"
+
+declare -a compilers=(
+"aarch64-linux-musl"
+"arm-linux-musleabi"
+"arm-linux-musleabihf"
+"i686-linux-musl"
+"mips-linux-musl"
+"mips64-linux-musl"
+"mips64-linux-musln32"
+"powerpc-linux-musl"
+"powerpc64-linux-musl"
+"riscv64-linux-musl"
+"x86_64-linux-musl"
+) 

@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+source config_for_scripts
+
+for compiler in "${compilers[@]}"
+do
+   wget "$URL/$compiler-cross.tgz" -O /tmp/$compiler.tgz 
+   tar zxvf /tmp/$compiler.tgz -C /usr/local 
+   ln -s /usr/local/$compiler-cross/bin/$compiler-gcc    /usr/local/$compiler-cross/bin/cc
+   ln -s /usr/local/$compiler-cross/bin/$compiler-g++    /usr/local/$compiler-cross/bin/c++
+   ln -s /usr/local/$compiler-cross/bin/$compiler-gcc-ar /usr/local/$compiler-cross/bin/ar
+   ln -s /usr/local/$compiler-cross/bin/$compiler-ld     /usr/local/$compiler-cross/bin/ld
+   rm -rf /tmp/*
+done
