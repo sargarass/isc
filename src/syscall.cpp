@@ -50,6 +50,16 @@ static void signal_handler_for_cancellation(int mysignal, siginfo_t *si, void* c
     }
 }
 
+static bool set_up_signal_handler() {
+    struct sigaction sig_action;
+    memset(&sig_action, 0, sizeof(sig_action));
+    sig_action.sa_flags = SA_SIGINFO | SA_RESTART;
+    sig_action.sa_handler = (decltype(sig_action.sa_handler))((void *)signal_handler_for_cancellation);
+    sigemptyset (&sig_action.sa_mask);
+    sigaction (interaption_signal, &sig_action, nullptr);
+    return true;
+}
+
 syscall_arg_t isc::syscall_err_in_ret(std::stop_token const &token,
                                       syscall_arg_t syscall,
                                       syscall_arg_t arg1,
@@ -60,15 +70,7 @@ syscall_arg_t isc::syscall_err_in_ret(std::stop_token const &token,
                                       syscall_arg_t arg6) noexcept {
     token_canceled.store(0, std::memory_order_release);
 
-    static bool init = false;
-    if (!init) {
-        struct sigaction sig_action;
-        memset(&sig_action, 0, sizeof(sig_action));
-        sig_action.sa_flags = SA_SIGINFO | SA_RESTART;
-        sig_action.sa_handler = (decltype(sig_action.sa_handler))((void *)signal_handler_for_cancellation);
-        sigemptyset (&sig_action.sa_mask);
-        sigaction (interaption_signal, &sig_action, nullptr);
-    }
+    static bool init = set_up_signal_handler(); // thread safe
 
     std::stop_callback cb(token, [token_canceled_p = &token_canceled, thread_id = pthread_self()](){
         token_canceled_p->store(1, std::memory_order_release);
