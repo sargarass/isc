@@ -1,7 +1,14 @@
 # Intruduction
 
-The idea of canceling a system call is not new. Musl and GLibc implement [posix pthread_cancel](https://man7.org/linux/man-pages/man3/pthread_cancel.3.html) which allows termination of the target thread and also interrupts a branch of the system calls. For termination, the target thread throws a specific exception (like *abi::__force unwind* for Glibc). In synchronous case, it happens whenever the target thread reaches certain functions (cancellation points). [Most of them are syscalls wrappers](https://man7.org/linux/man-pages/man7/pthreads.7.html). 
-While this approach was valid in C, in C++ many of those functions are used in the standard library in noexcept functions or destructors. Moreover, system calls like *close* are commonly used in client code in RAII idiom. Whenever an exception is thrown from destructor, the program terminates, which means pthread_cancel isn't suitable for C++ (small example [here](https://skaark.wordpress.com/2010/08/26/pthread_cancel-considered-harmful/)).
+The idea of canceling a system call is not new. Musl and GLibc implement [posix pthread_cancel](https://man7.org/linux/man-pages/man3/pthread_cancel.3.html) which allows termination of the target thread and also interrupts a branch of the system calls. For termination, the target thread throws a specific exception (like *abi::__force unwind* for Glibc). In synchronous case, it happens whenever the target thread reaches certain functions (cancellation points). [Most of them are syscalls wrappers](https://man7.org/linux/man-pages/man7/pthreads.7.html). "man pthread" says:
+```
+POSIX.1 specifies that certain functions must, and certain other
+functions may, be cancellation points.  If a thread is cancelable,
+its cancelability type is deferred, and a cancellation request is
+pending for the thread, then the thread is canceled when it calls a
+function that is a cancellation point.
+```
+While this approach was valid in C, in C++ some of those "potential cancelation points" can be used in the standard library in noexcept functions or destructors ([condition_variable::wait](https://github.com/gcc-mirror/gcc/blob/b7c9bd36eaacac42631b882dc67a6f0db94de21c/libstdc%2B%2B-v3/include/std/condition_variable#L94), *close* in io-related classes). *pthread_cancel* isn't part of C neither C++ standards so more collisions may occur in future. Moreover, system calls like *close* are commonly used in client code in RAII idiom. Whenever an exception is thrown from destructor, the program terminates, which means pthread_cancel isn't suitable for C++ (small example [here](https://skaark.wordpress.com/2010/08/26/pthread_cancel-considered-harmful/)).
 
 # Jthreads and ISC
 
