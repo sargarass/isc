@@ -95,7 +95,12 @@ While execution has not been tested on all of them, ISC supports many architectu
 
 # How to use it
 
-First of all, you need a compiler that supports C++20. After that, just add the library as a subdirectory to your project and link your cmake target to isc::isc target. Now you can include <isl/isl.h> and start using the library. Also make sure your aplication does not block *interaption_signal* (SIGRTMAX by default).
+1. Compiler that supports C++20.
+2. Cmake 3.8+.
+3. Make sure your aplication does not block *interaption_signal* (SIGRTMAX by default).
+4. Add the library as a subdirectory to your project.
+5. Link your cmake target to isc::isc target.
+6. Include <isl/isl.h> and start using the library.
 
 # It sounds great, but how does it work?
 
