@@ -97,7 +97,7 @@ While execution has not been tested on all of them, ISC supports many architectu
 
 1. Compiler that supports C++20.
 2. Cmake 3.8+.
-3. Make sure your aplication does not block *interaption_signal* (SIGRTMAX by default).
+3. Make sure your aplication does not block *interaption_signal* (SIGRTMAX by default, can be changed to any real-time signal number).
 4. Add the library as a subdirectory to your project.
 5. Link your cmake target to isc::isc target.
 6. Include <isl/isl.h> and start using the library.
