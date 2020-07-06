@@ -100,7 +100,7 @@ While execution has not been tested on all of them, ISC supports many architectu
 3. Make sure your aplication does not block *interaption_signal* (SIGRTMAX by default, can be changed to any real-time signal number).
 4. Add the library as a subdirectory to your project.
 5. Link your cmake target to isc::isc target.
-6. Include <isl/isl.h> and start using the library.
+6. Include <isc/isc.h> and start using the library.
 
 # It sounds great, but how does it work?
 
@@ -110,6 +110,6 @@ Let's say *target thread* is a jthread that does some work. At some point of tim
 3. Associates std::stop_callback with a stop_token passed to isc's syscall wrapper. The callback will store 1 to *token_canceled* and will send *interaption_signal* to the target thread if token is triggered.
 4. Calls to arch specific assembly code:
 4.1. Checks if interuption is requested, if it is, performs canceleration (return -1 and errno=ECANCELED) otherwise makes the syscall.
-4.2. While the target thread is in the system call, canceleration can be requested through the token. Whenever this happends, stop_callback occurs, and the target thread will handle *interaption_signal* in the special handler. In this handler it will check if thread_local variable *token_canceled* is setted to 1 and PC counter is inside isl's syscall asm's labels (checkout *a clever hack* [here](https://lwn.net/Articles/683118/)). If someone else sends us a signal the target thread will just restart syscall. If signal arrives after the syscall has finished, nothing will happend (PC counter out of the asm's syscall labels). If the target thread is preforming syscall and canceleration is requested then target thread's PC counter will be changed to the start of __cancel funtion that just returns -ECANCELED as the syscall result.
+4.2. While the target thread is in the system call, canceleration can be requested through the token. Whenever this happends, stop_callback occurs, and the target thread will handle *interaption_signal* in the special handler. In this handler it will check if thread_local variable *token_canceled* is setted to 1 and PC counter is inside isc's syscall asm's labels (checkout *a clever hack* [here](https://lwn.net/Articles/683118/)). If someone else sends us a signal the target thread will just restart syscall. If signal arrives after the syscall has finished, nothing will happend (PC counter out of the asm's syscall labels). If the target thread is preforming syscall and canceleration is requested then target thread's PC counter will be changed to the start of __cancel funtion that just returns -ECANCELED as the syscall result.
 5. Special case: checks return value of the syscall is -EINTR and *token_canceled* is 1 => return -1 and errno=ECANCELED from isc's syscall wrapper.
 6. Return result of the system call (uses errno if it needs to) from isc's syscall wrapper.
